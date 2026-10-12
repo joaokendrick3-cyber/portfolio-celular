@@ -1,0 +1,52 @@
+/* ===== Portfólio (somado ao estilo base do PAINEL) ===== */
+.gigante { font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.pos { color: var(--verde); }
+.neg { color: var(--vermelho); }
+.logo-ativo { width: 36px; height: 36px; border-radius: 10px; background: #fff; object-fit: contain; padding: 3px; flex: none; }
+.logo-ativo.letra { background: var(--painel-2); color: var(--texto-2); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; padding: 0; }
+button.linha { background: none; border: 0; border-top: 1px solid var(--borda); width: 100%; text-align: left; color: inherit; font: inherit; }
+.linha.clicavel { cursor: pointer; min-height: 56px; }
+.linha.ativo { gap: 12px; }
+.linha.ativo .col:nth-child(2) { flex: 1; }
+.linha.lida { opacity: .55; }
+a.linha { color: inherit; text-decoration: none; }
+.titulo-evento { font-size: 14.5px; line-height: 1.35; }
+.rolavel { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+.rolavel::-webkit-scrollbar { display: none; }
+.rolavel button { flex: none; padding: 0 14px; }
+.mini-seg { display: flex; gap: 4px; }
+.mini-seg button { min-height: 32px; min-width: 40px; border: 1px solid var(--borda); border-radius: 8px; background: none; color: var(--texto-2); font-size: 12px; font-weight: 700; }
+.mini-seg button.ativa { background: var(--painel-2); color: #fff; }
+.quatro-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 12px; }
+.quatro-col small { display: block; color: var(--texto-2); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.quatro-col b { font-size: 16px; }
+.grafico-legenda { display: flex; gap: 14px; font-size: 12px; color: var(--texto-2); margin-bottom: 4px; }
+.grafico-legenda i, .grafico-dica i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+.grafico-dica { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; align-items: center; padding-top: 4px; }
+.grafico svg { display: block; }
+.barras-pct { display: flex; flex-direction: column; gap: 12px; }
+.linha-topo { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+.trilha { height: 8px; border-radius: 99px; background: var(--painel-2); overflow: hidden; }
+.trilha i { display: block; height: 100%; border-radius: 99px; }
+.barras-mes { display: flex; align-items: flex-end; gap: 6px; height: 150px; }
+.barras-mes .coluna { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; gap: 4px; }
+.barras-mes .pilha { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+.barras-mes .pilha i { display: block; width: 100%; }
+.barras-mes .recebido, .am.recebido { background: var(--verde); }
+.barras-mes .a-receber, .am.a-receber { background: repeating-linear-gradient(45deg, var(--ciano), var(--ciano) 3px, transparent 3px, transparent 6px); }
+.barras-mes small { font-size: 9.5px; color: var(--texto-2); }
+.selo.verde { background: color-mix(in srgb, var(--verde) 16%, transparent); color: var(--verde); }
+.filtros input, .filtros select { width: 100%; height: 46px; border-radius: 12px; border: 1px solid var(--borda); background: var(--painel-2); color: var(--texto); padding: 0 12px; font-size: 16px; font-family: inherit; }
+.segmentos { display: flex; gap: 6px; background: var(--painel-2); border-radius: 12px; padding: 4px; margin: 6px 0; }
+.segmentos button { flex: 1; min-height: 40px; border: 0; border-radius: 9px; background: none; color: var(--texto-2); font-size: 13.5px; font-weight: 700; }
+.segmentos button.ativa { background: var(--painel); color: #fff; box-shadow: 0 0 0 1px var(--borda); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.am { display: inline-block; width: 13px; height: 13px; border-radius: 4px; }
+.centro { text-align: center; }
+
+.grade-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grade-2 > * { min-width: 0; }
+.numero strong { font-size: 26px; overflow-wrap: anywhere; }
+.gigante { overflow-wrap: anywhere; }
+.conteudo { overflow-x: hidden; }
