@@ -105,9 +105,12 @@ function Conteudo({ onCapa }: { onCapa: () => void }) {
     <div className="app">
       <main className="conteudo">
         <header className="cabecalho">
-          <div>
-            <strong className="marca-toque" onClick={onCapa} role="button" tabIndex={0}>PORTFÓLIO</strong>
-            <small className={horas > 24 ? 'velho' : ''}>{horas > 24 ? 'Desatualizado · ' : 'Atualizado · '}{quando}</small>
+          <div className="marca-topo">
+            <img className="icone-topo" src={`${import.meta.env.BASE_URL}icone-192.png`} alt="" />
+            <div>
+              <strong className="marca-toque" onClick={onCapa} role="button" tabIndex={0}>PORTFÓLIO</strong>
+              <small className={horas > 24 ? 'velho' : ''}>{horas > 24 ? 'Desatualizado · ' : 'Atualizado · '}{quando}</small>
+            </div>
           </div>
           <button className="botao-icone" onClick={() => void atualizar()} aria-label="Atualizar" disabled={carregando}>{carregando ? '…' : '↻'}</button>
           {erro && <p className="faixa-erro">{erro}</p>}

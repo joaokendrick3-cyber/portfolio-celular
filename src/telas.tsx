@@ -15,17 +15,29 @@ function Logo({ r, ticker, nome }: { r: Resumo; ticker: string; nome: string }) 
 }
 
 // ---------------------------------------------------------------------------------------- Radar
-const PERIODOS: [string, string][] = [['dia', 'Dia'], ['visita', 'Visita'], ['semana', '7 dias'], ['mes', '30 dias'], ['ano', 'Ano'], ['12m', '12 meses'], ['tudo', 'Tudo']]
+const PERIODOS: [string, string][] = [['tudo', 'Desde o início'], ['12m', 'Últimos 12 meses'], ['ano', 'No ano'], ['mes', 'Últimos 30 dias'], ['semana', 'Últimos 7 dias'], ['visita', 'Desde a última visita'], ['dia', 'No último pregão']]
 
 export function Radar({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => void }) {
-  const [periodo, setPeriodo] = useState('dia')
+  const [periodo, setPeriodo] = useState('tudo')   // padrão: desde o início da carteira
+  const [aberto, setAberto] = useState(false)
   const rd = r.radar[periodo]
   const ordenados = useMemo(() => [...(rd?.ativos ?? [])].sort((a, b) => Math.abs(b.resultado) - Math.abs(a.resultado)), [rd])
   return (
     <>
       <Titulo sub="O que mudou na carteira">Radar</Titulo>
-      <div className="segmentos rolavel">
-        {PERIODOS.map(([v, t]) => <button key={v} className={periodo === v ? 'ativa' : ''} onClick={() => setPeriodo(v)}>{t}</button>)}
+      <div className="filtro">
+        <button className="filtro-botao" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+          <span className={`seta ${aberto ? 'aberta' : ''}`}>›</span>
+          <b>Filtro</b>
+          <small>{PERIODOS.find(([v]) => v === periodo)?.[1]}</small>
+        </button>
+        {aberto && (
+          <div className="filtro-opcoes">
+            {PERIODOS.map(([v, t]) => (
+              <button key={v} className={periodo === v ? 'ativa' : ''} onClick={() => { setPeriodo(v); setAberto(false) }}>{t}</button>
+            ))}
+          </div>
+        )}
       </div>
       {!rd ? <section className="cartao"><span className="suave">Radar indisponível para este período.</span></section> : (
         <>
@@ -38,9 +50,10 @@ export function Radar({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => void 
           <section className="cartao">
             <small className="rotulo">Por ativo</small>
             {ordenados.map((a) => (
-              <button className="linha clicavel" key={a.ticker} onClick={() => onAtivo(a.ticker)}>
+              <button className="linha clicavel ativo" key={a.ticker} onClick={() => onAtivo(a.ticker)}>
+                <Logo r={r} ticker={a.ticker} nome={a.exibicao} />
                 <div className="col"><strong>{a.exibicao}</strong><small>{a.classe}</small></div>
-                <div className="col direita"><b className={corDe(a.resultado)}>{sinalBRL(a.resultado)}</b><small className={corDe(a.variacao_pct)}>{pct(a.variacao_pct, true)}</small></div>
+                <div className="col direita"><b className={corDe(a.resultado)}>{sinalBRL(a.resultado)}</b><small className={corDe(a.variacao_pct ?? a.resultado_pct)}>{pct(a.variacao_pct ?? a.resultado_pct, true)}</small></div>
               </button>
             ))}
           </section>

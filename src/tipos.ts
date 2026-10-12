@@ -13,7 +13,7 @@ export interface Dashboard {
   ativos: Ativo[]; classes: Classe[]; evolucao: PontoEvolucao[]; cotacoes_origem: { fonte: string; referencia_em: string }[]
 }
 export interface Agenda { data: string; descricao: string; exibicao: string; ticker: string; tipo: string; referencia: string | null; link: string | null; valor?: number | null }
-export interface RadarAtivo { exibicao: string; ticker: string; classe: string; resultado: number; resultado_pct: number; variacao_pct: number; preco_agora: number | null; preco_antes: number | null; moeda: string; compras: number; vendas: number }
+export interface RadarAtivo { exibicao: string; ticker: string; classe: string; resultado: number; resultado_pct: number; variacao_pct: number | null; preco_agora: number | null; preco_antes: number | null; moeda: string; compras: number; vendas: number }
 export interface Radar {
   periodo: string; rotulo: string; resultado: number; resultado_pct: number; valor_antes: number | null; ativos: RadarAtivo[]
   agenda: Agenda[]; total_proventos_pagos: number; proventos_pagos: { exibicao: string; total_liquido?: number; valor?: number; pagamento?: string }[]
