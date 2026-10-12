@@ -3,8 +3,13 @@ import type { Ativo, Resumo } from './tipos'
 import { brl, corDe, cotas, data, dataCurta, intervaloPatrimonio, mesCurto, pct, PERIODOS_GRAFICO, precoMedioDe, recortar, sinalBRL } from './util'
 import { BarrasMes, Linhas } from './graficos'
 
-export function Titulo({ children, sub }: { children: string; sub?: string }) {
-  return <div className="titulo-tela"><h1>{children}</h1>{sub && <small>{sub}</small>}</div>
+export function Titulo({ children, sub, direita }: { children: string; sub?: string; direita?: string }) {
+  return (
+    <div className="titulo-tela">
+      <div className="titulo-linha"><h1>{children}</h1>{direita && <strong className="titulo-direita">{direita}</strong>}</div>
+      {sub && <small>{sub}</small>}
+    </div>
+  )
 }
 
 const CORES = ['#6c6cff', '#22d3ee', '#4ade80', '#facc15', '#f472b6', '#fb923c', '#a78bfa']
@@ -153,16 +158,18 @@ export function Carteira({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => vo
   const [classe, setClasse] = useState('todas')
   const ativos = r.dashboard.ativos.filter((a) => classe === 'todas' || a.classe === classe)
   const classes = [...new Set(r.dashboard.ativos.map((a) => a.classe))]
+  const total = ativos.reduce((t, a) => t + a.valor_atual, 0)   // muda junto com o filtro (todas, ações, FIIs, outros)
   const linha = (a: Ativo) => (
-    <button className="linha clicavel ativo" key={a.ticker} onClick={() => onAtivo(a.ticker)}>
+    <button className="linha clicavel carteira-linha" key={a.ticker} onClick={() => onAtivo(a.ticker)}>
       <Logo r={r} ticker={a.ticker} nome={a.exibicao} />
-      <div className="col"><strong>{a.exibicao}</strong><small>{cotas(a.cotas)} cotas · PM {precoMedioDe(a)}</small></div>
-      <div className="col direita"><b>{brl(a.valor_atual)}</b><small className={corDe(a.valorizacao)}>{pct(a.valorizacao_pct, true)}</small></div>
+      <strong className="carteira-nome">{a.exibicao}</strong>
+      <span className={`carteira-val ${corDe(a.valorizacao_pct)}`}>{pct(a.valorizacao_pct, true)}</span>
+      <b className="carteira-valor">{brl(a.valor_atual)}</b>
     </button>
   )
   return (
     <>
-      <Titulo sub={`${r.dashboard.ativos.length} ativos · ${brl(r.dashboard.patrimonio)}`}>Carteira</Titulo>
+      <Titulo sub={`${ativos.length} ${ativos.length === 1 ? 'ativo' : 'ativos'}`} direita={brl(total)}>Carteira</Titulo>
       <div className="segmentos rolavel">
         {['todas', ...classes].map((c) => <button key={c} className={classe === c ? 'ativa' : ''} onClick={() => setClasse(c)}>{c === 'todas' ? 'Todas' : c}</button>)}
       </div>
