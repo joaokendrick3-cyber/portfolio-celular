@@ -81,11 +81,10 @@ export function Dashboard({ r }: { r: Resumo }) {
   const [aberto, setAberto] = useState(false)
   const evo = useMemo(() => recortar(d.evolucao, periodo), [d.evolucao, periodo])
   const calcular = (inicio: string, fim: string) => intervaloPatrimonio(d.evolucao, r.lancamentos, inicio, fim)
-  const bloco = (rotulo: string, valor: string, classe = '', extra?: string) => (
-    <div className="cartao numero">
+  const bloco = (rotulo: string, valor: string, classe = '') => (
+    <div className="cartao numero fixo">
       <small>{rotulo}</small>
       <strong className={classe}>{valor}</strong>
-      {extra && <span className="suave">{extra}</span>}
     </div>
   )
   return (
@@ -94,15 +93,14 @@ export function Dashboard({ r }: { r: Resumo }) {
       <section className="cartao destaque">
         <small className="rotulo">Patrimônio</small>
         <strong className="gigante">{brl(d.patrimonio)}</strong>
-        <span className={corDe(d.retorno_total)}>{sinalBRL(d.retorno_total)} · {pct(d.retorno_total_pct, true)} <span className="suave">retorno total (com proventos)</span></span>
       </section>
       <section className="grade-2">
         {bloco('Investido', brl(d.investido))}
         {bloco('Valorização', sinalBRL(d.valorizacao), corDe(d.valorizacao))}
         {bloco('Proventos recebidos', brl(d.proventos_recebidos))}
-        {bloco('Valorização', pct(d.valorizacao_pct, true), corDe(d.valorizacao_pct), 'só o preço dos ativos')}
+        {bloco('Valorização', pct(d.valorizacao_pct, true), corDe(d.valorizacao_pct))}
         {bloco('A receber', brl(d.proventos_a_receber))}
-        {bloco('Retorno total', pct(d.retorno_total_pct, true), corDe(d.retorno_total_pct), 'com os proventos recebidos')}
+        {bloco('Retorno total', pct(d.retorno_total_pct, true), corDe(d.retorno_total_pct))}
       </section>
       <section className="cartao">
         <div className="linha topo-cartao"><small className="rotulo">Evolução do patrimônio</small></div>
@@ -146,7 +144,6 @@ export function Dashboard({ r }: { r: Resumo }) {
           ))}
         </div>
       </section>
-      {d.cotacoes_origem.length > 0 && <p className="suave centro">Cotações: {d.cotacoes_origem.map((o) => `${o.fonte} (${o.referencia_em})`).join(' · ')}</p>}
     </>
   )
 }
