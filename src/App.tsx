@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import Capa from './Capa'
 import type { Resumo } from './tipos'
 import { baixarResumo, lerCache, limparCache, supabase, temSupabase, VERSAO_ENTENDIDA } from './dados'
 import Entrada from './Entrada'
@@ -14,7 +15,7 @@ const ABAS: { id: Aba; nome: string; icone: string }[] = [
   { id: 'mais', nome: 'Mais', icone: 'M5 12h.01M12 12h.01M19 12h.01' }
 ]
 
-export default function App() {
+function Conteudo({ onCapa }: { onCapa: () => void }) {
   const [resumo, setResumo] = useState<Resumo | null>(() => lerCache())
   const [logado, setLogado] = useState<boolean | null>(temSupabase ? null : true)
   const [aba, setAba] = useState<Aba>('radar')
@@ -105,7 +106,7 @@ export default function App() {
       <main className="conteudo">
         <header className="cabecalho">
           <div>
-            <strong>PORTFÓLIO</strong>
+            <strong className="marca-toque" onClick={onCapa} role="button" tabIndex={0}>PORTFÓLIO</strong>
             <small className={horas > 24 ? 'velho' : ''}>{horas > 24 ? 'Desatualizado · ' : 'Atualizado · '}{quando}</small>
           </div>
           <button className="botao-icone" onClick={() => void atualizar()} aria-label="Atualizar" disabled={carregando}>{carregando ? '…' : '↻'}</button>
@@ -123,5 +124,18 @@ export default function App() {
         ))}
       </nav>
     </div>
+  )
+}
+
+/** A capa de abertura aparece ao abrir o app (e ao tocar em PORTFÓLIO no topo); o app já carrega os dados por trás dela. */
+export default function App() {
+  const [capa, setCapa] = useState(true)
+  const [volta, setVolta] = useState(0)
+  const fechar = useCallback(() => setCapa(false), [])
+  return (
+    <>
+      <Conteudo onCapa={() => { setVolta((v) => v + 1); setCapa(true) }} />
+      {capa && <Capa key={volta} onFim={fechar} />}
+    </>
   )
 }
