@@ -1,7 +1,7 @@
 // Formato do resumo que o Portfólio do computador envia (ver app/celular.py). Só os campos que o celular usa.
 export interface Ativo {
   ticker: string; exibicao: string; nome: string | null; classe: string; moeda: string
-  cotas: number; preco_medio: number | null; cotacao: number | null; fonte: string | null
+  cotas: number; preco_medio: number | null; cotacao: number | null; cotacao_usd?: number | null; preco_medio_usd?: number | null; fonte: string | null
   investido: number; valor_atual: number; valorizacao: number; valorizacao_pct: number
   participacao: number; participacao_classe: number; proventos_recebidos: number; proventos_a_receber: number
 }
@@ -34,7 +34,7 @@ export interface Detalhe {
   historico: { data: string; tipo: string; cotas: number; preco: number; total: number; cotas_apos: number; preco_medio_apos: number | null; lucro_realizado: number | null }[]
   proventos: Provento[]; agenda: Agenda[]; eventos: Evento[]
   grafico: { moeda: string; precos: { data: string; preco: number; estimado: boolean }[]; compras: { data: string; cotas: number; preco: number }[]; preco_medio: { data: string; valor: number }[] }
-  yield_on_cost: number | null
+  yield_on_cost: number | null; dolar_hoje: number | null
 }
 export interface LinhaObservacao { exibicao: string; classe: string; cotacao: number | null; justo: number | null; teto: number | null; margem_justo: number | null; margem_teto: number | null; minimo_52s: number | null; maximo_52s: number | null; distancia_maxima: number | null }
 export interface Resumo {
@@ -46,4 +46,9 @@ export interface Resumo {
   detalhes: Record<string, Detalhe>
   logos: Record<string, string>
   observacao: { linhas: LinhaObservacao[] } | null
+}
+
+export interface ResultadoIntervalo {
+  inicio: string; fim: string; valor_inicio: number; valor_fim: number; diferenca: number; pct: number | null
+  compras?: number; vendas?: number; estimado: boolean
 }

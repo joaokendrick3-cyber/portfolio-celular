@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Resumo } from './tipos'
-import { brl, cotas, corDe, data, moeda, pct, num2, sinalBRL } from './util'
+import { brl, cotas, corDe, cotacaoDe, data, intervaloPreco, moeda, pct, num2, precoMedioDe, sinalBRL } from './util'
 import { Linhas } from './graficos'
 import { Titulo } from './telas'
 
@@ -30,17 +30,19 @@ export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: strin
         <span className={corDe(s.valorizacao)}>{sinalBRL(s.valorizacao)} · {pct(s.valorizacao_pct, true)}</span>
       </section>
       <section className="cartao quatro-col">
-        <div><small>Cotação</small><b>{moeda(s.cotacao, s.moeda)}</b></div>
-        <div><small>Preço médio</small><b>{moeda(s.preco_medio, s.moeda)}</b></div>
+        <div><small>Cotação</small><b>{cotacaoDe(s)}</b></div>
+        <div><small>Preço médio</small><b>{precoMedioDe(s)}</b></div>
         <div><small>Cotas</small><b>{cotas(s.cotas)}</b></div>
         <div><small>Investido</small><b>{brl(s.investido)}</b></div>
         <div><small>% da carteira</small><b>{pct(s.participacao)}</b></div>
         <div><small>Proventos</small><b>{brl(s.proventos_recebidos)}</b></div>
+        {s.moeda === 'USD' && d.dolar_hoje ? <div><small>Dólar (PTAX)</small><b>R$ {d.dolar_hoje.toFixed(4).replace('.', ',')}</b></div> : null}
       </section>
       <section className="cartao">
         <small className="rotulo">Preço, preço médio e compras</small>
         <Linhas
           formato={(n) => moeda(n, g.moeda)}
+          calcular={(i, f) => intervaloPreco(g.precos, i, f)}
           series={[
             { nome: 'Preço', cor: '#6c6cff', pontos: g.precos.map((p) => ({ x: p.data, y: p.preco })) },
             ...(g.preco_medio.length > 1 ? [{ nome: 'Preço médio', cor: '#facc15', tracejada: true, pontos: g.preco_medio.map((p) => ({ x: p.data, y: p.valor })) }] : [])
@@ -53,8 +55,8 @@ export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: strin
       <section className="cartao"><small className="rotulo">Histórico de operações</small>
         {d.historico.map((h, i) => (
           <div className="linha" key={i}>
-            <div className="col"><strong>{h.tipo === 'compra' ? 'Compra' : h.tipo === 'venda' ? 'Venda' : h.tipo}</strong><small>{data(h.data)} · {cotas(h.cotas)} × {moeda(h.preco, g.moeda)}</small></div>
-            <div className="col direita"><b>{moeda(h.total, g.moeda)}</b><small>PM depois: {moeda(h.preco_medio_apos, g.moeda)}</small></div>
+            <div className="col"><strong>{h.tipo === 'compra' ? 'Compra' : h.tipo === 'venda' ? 'Venda' : h.tipo}</strong><small>{data(h.data)} · {cotas(h.cotas)} × {brl(h.preco)}</small></div>
+            <div className="col direita"><b>{brl(h.total)}</b><small>PM depois: {brl(h.preco_medio_apos)}</small></div>
           </div>
         ))}
       </section>

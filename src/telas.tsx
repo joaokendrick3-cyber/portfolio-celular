@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Ativo, Resumo } from './tipos'
-import { brl, corDe, cotas, data, dataCurta, mesCurto, moeda, pct, sinalBRL } from './util'
-import { BarrasMes, BarrasPct, Linhas } from './graficos'
+import { brl, corDe, cotas, data, dataCurta, intervaloPatrimonio, mesCurto, pct, PERIODOS_GRAFICO, precoMedioDe, recortar, sinalBRL } from './util'
+import { BarrasMes, Linhas } from './graficos'
 
 export function Titulo({ children, sub }: { children: string; sub?: string }) {
   return <div className="titulo-tela"><h1>{children}</h1>{sub && <small>{sub}</small>}</div>
@@ -77,38 +77,74 @@ export function Radar({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => void 
 // ---------------------------------------------------------------------------------------- Dashboard
 export function Dashboard({ r }: { r: Resumo }) {
   const d = r.dashboard
-  const [intervalo, setIntervalo] = useState<'3m' | '6m' | 'tudo'>('tudo')
-  const evo = useMemo(() => {
-    const todos = d.evolucao
-    const n = intervalo === '3m' ? 66 : intervalo === '6m' ? 130 : todos.length
-    return todos.slice(-n)
-  }, [d.evolucao, intervalo])
+  const [periodo, setPeriodo] = useState('tudo')
+  const [aberto, setAberto] = useState(false)
+  const evo = useMemo(() => recortar(d.evolucao, periodo), [d.evolucao, periodo])
+  const calcular = (inicio: string, fim: string) => intervaloPatrimonio(d.evolucao, r.lancamentos, inicio, fim)
+  const bloco = (rotulo: string, valor: string, classe = '', extra?: string) => (
+    <div className="cartao numero">
+      <small>{rotulo}</small>
+      <strong className={classe}>{valor}</strong>
+      {extra && <span className="suave">{extra}</span>}
+    </div>
+  )
   return (
     <>
-      <Titulo sub={d.dolar ? `Dólar ${d.dolar.valor.toFixed(4).replace('.', ',')} (${d.dolar.data})` : undefined}>Dashboard</Titulo>
+      <Titulo>Dashboard</Titulo>
       <section className="cartao destaque">
         <small className="rotulo">Patrimônio</small>
         <strong className="gigante">{brl(d.patrimonio)}</strong>
         <span className={corDe(d.retorno_total)}>{sinalBRL(d.retorno_total)} · {pct(d.retorno_total_pct, true)} <span className="suave">retorno total (com proventos)</span></span>
       </section>
       <section className="grade-2">
-        <div className="cartao numero"><small>Investido</small><strong>{brl(d.investido)}</strong></div>
-        <div className="cartao numero"><small>Valorização</small><strong className={corDe(d.valorizacao)}>{sinalBRL(d.valorizacao)}</strong><span className={corDe(d.valorizacao_pct)}>{pct(d.valorizacao_pct, true)}</span></div>
-        <div className="cartao numero"><small>Proventos recebidos</small><strong>{brl(d.proventos_recebidos)}</strong></div>
-        <div className="cartao numero"><small>A receber</small><strong>{brl(d.proventos_a_receber)}</strong></div>
+        {bloco('Investido', brl(d.investido))}
+        {bloco('Valorização', sinalBRL(d.valorizacao), corDe(d.valorizacao))}
+        {bloco('Proventos recebidos', brl(d.proventos_recebidos))}
+        {bloco('Valorização', pct(d.valorizacao_pct, true), corDe(d.valorizacao_pct), 'só o preço dos ativos')}
+        {bloco('A receber', brl(d.proventos_a_receber))}
+        {bloco('Retorno total', pct(d.retorno_total_pct, true), corDe(d.retorno_total_pct), 'com os proventos recebidos')}
       </section>
       <section className="cartao">
-        <div className="linha topo-cartao"><small className="rotulo">Evolução do patrimônio</small>
-          <div className="mini-seg">{(['3m', '6m', 'tudo'] as const).map((v) => <button key={v} className={intervalo === v ? 'ativa' : ''} onClick={() => setIntervalo(v)}>{v === 'tudo' ? 'Tudo' : v}</button>)}</div>
+        <div className="linha topo-cartao"><small className="rotulo">Evolução do patrimônio</small></div>
+        <div className="filtro compacto">
+          <button className="filtro-botao" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+            <span className={`seta ${aberto ? 'aberta' : ''}`}>›</span>
+            <b>Datas</b>
+            <small>{PERIODOS_GRAFICO.find(([v]) => v === periodo)?.[1]}</small>
+          </button>
+          {aberto && (
+            <div className="filtro-opcoes grade-opcoes">
+              {PERIODOS_GRAFICO.map(([v, t]) => (
+                <button key={v} className={periodo === v ? 'ativa' : ''} onClick={() => { setPeriodo(v); setAberto(false) }}>{t}</button>
+              ))}
+            </div>
+          )}
         </div>
-        <Linhas series={[
-          { nome: 'Patrimônio', cor: '#6c6cff', pontos: evo.map((p) => ({ x: p.data, y: p.valor })) },
-          { nome: 'Investido', cor: '#8b90a5', tracejada: true, pontos: evo.map((p) => ({ x: p.data, y: p.investido })) }
-        ]} />
+        <Linhas
+          calcular={calcular}
+          series={[
+            { nome: 'Patrimônio', cor: '#6c6cff', pontos: evo.map((p) => ({ x: p.data, y: p.valor })) },
+            { nome: 'Investido', cor: '#8b90a5', tracejada: true, pontos: evo.map((p) => ({ x: p.data, y: p.investido })) }
+          ]}
+        />
       </section>
       <section className="cartao">
         <small className="rotulo">Por classe</small>
-        <BarrasPct itens={d.classes.map((c, i) => ({ nome: c.classe, valor: c.participacao, cor: CORES[i % CORES.length], texto: `${pct(c.participacao)} · ${brl(c.valor_atual)}` }))} />
+        <div className="classes">
+          {d.classes.map((c, i) => (
+            <div className="classe" key={c.classe}>
+              <div className="classe-topo">
+                <span className="classe-nome"><i style={{ background: CORES[i % CORES.length] }} />{c.classe}</span>
+                <b className="classe-pct">{pct(c.participacao)}</b>
+              </div>
+              <div className="trilha grossa"><i style={{ width: Math.max(2, c.participacao * 100) + '%', background: CORES[i % CORES.length] }} /></div>
+              <div className="classe-base">
+                <span className="classe-valor">{brl(c.valor_atual)}</span>
+                <span className={`classe-val ${corDe(c.valorizacao_pct)}`}>{pct(c.valorizacao_pct, true)} <small>valorização</small></span>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
       {d.cotacoes_origem.length > 0 && <p className="suave centro">Cotações: {d.cotacoes_origem.map((o) => `${o.fonte} (${o.referencia_em})`).join(' · ')}</p>}
     </>
@@ -123,7 +159,7 @@ export function Carteira({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => vo
   const linha = (a: Ativo) => (
     <button className="linha clicavel ativo" key={a.ticker} onClick={() => onAtivo(a.ticker)}>
       <Logo r={r} ticker={a.ticker} nome={a.exibicao} />
-      <div className="col"><strong>{a.exibicao}</strong><small>{cotas(a.cotas)} cotas · PM {moeda(a.preco_medio, a.moeda)}</small></div>
+      <div className="col"><strong>{a.exibicao}</strong><small>{cotas(a.cotas)} cotas · PM {precoMedioDe(a)}</small></div>
       <div className="col direita"><b>{brl(a.valor_atual)}</b><small className={corDe(a.valorizacao)}>{pct(a.valorizacao_pct, true)}</small></div>
     </button>
   )

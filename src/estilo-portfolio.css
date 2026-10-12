@@ -66,3 +66,29 @@ a.linha { color: inherit; text-decoration: none; }
 .filtro-opcoes button { display: block; width: 100%; min-height: 46px; padding: 0 14px; border: 0; border-bottom: 1px solid var(--borda); background: none; color: var(--texto); font: inherit; font-size: 15px; text-align: left; }
 .filtro-opcoes button:last-child { border-bottom: 0; }
 .filtro-opcoes button.ativa { color: var(--destaque); font-weight: 700; }
+
+/* Dashboard: gráfico com seleção, filtro de datas e classes maiores */
+.filtro.compacto { margin: 0 0 8px; }
+.filtro.compacto .filtro-botao { min-height: 42px; }
+.grade-opcoes { display: grid; grid-template-columns: repeat(2, 1fr); }
+.grade-opcoes button { border-right: 1px solid var(--borda); }
+.grade-opcoes button:nth-child(2n) { border-right: 0; }
+.grafico-dica-uso { color: var(--texto-2); font-size: 12.5px; text-align: center; padding-top: 6px; }
+.caixa-intervalo { margin-top: 8px; padding: 12px 14px; border-radius: 12px; background: var(--painel-2); border: 1px solid var(--borda); display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
+.int-datas { font-size: 12.5px; color: var(--texto-2); }
+.int-valores { font-size: 14px; }
+.int-pct { font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+.int-dif { font-size: 16px; font-weight: 700; }
+.int-nota { font-size: 12px; color: var(--texto-2); }
+.int-limpar { margin-top: 6px; background: none; border: 0; color: var(--destaque); font: inherit; font-size: 13px; min-height: 36px; }
+.classes { display: flex; flex-direction: column; gap: 22px; padding-top: 6px; }
+.classe { display: flex; flex-direction: column; gap: 10px; }
+.classe-topo { display: flex; align-items: center; justify-content: space-between; }
+.classe-nome { display: inline-flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+.classe-nome i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+.classe-pct { font-size: 22px; font-weight: 800; }
+.trilha.grossa { height: 12px; }
+.classe-base { display: flex; align-items: baseline; justify-content: space-between; }
+.classe-valor { font-size: 16px; color: var(--texto); }
+.classe-val { font-size: 15px; font-weight: 700; }
+.classe-val small { font-weight: 500; color: var(--texto-2); font-size: 12px; margin-left: 4px; }
