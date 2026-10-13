@@ -94,7 +94,7 @@ function Conteudo({ onCapa }: { onCapa: () => void }) {
   else if (aba === 'radar') tela = <Radar r={resumo} onAtivo={setAtivo} />
   else if (aba === 'dashboard') tela = <Dashboard r={resumo} />
   else if (aba === 'carteira') tela = <Carteira r={resumo} onAtivo={setAtivo} />
-  else if (aba === 'proventos') tela = <Proventos r={resumo} />
+  else if (aba === 'proventos') tela = <Proventos r={resumo} onAtivo={setAtivo} />
   else if (parte === 'eventos') tela = <Eventos r={resumo} onVoltar={() => setParte('menu')} />
   else if (parte === 'lancamentos') tela = <Lancamentos r={resumo} onVoltar={() => setParte('menu')} />
   else if (parte === 'observacao') tela = <Observacao r={resumo} onVoltar={() => setParte('menu')} />

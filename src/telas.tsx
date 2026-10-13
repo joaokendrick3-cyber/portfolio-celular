@@ -179,35 +179,117 @@ export function Carteira({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => vo
 }
 
 // ---------------------------------------------------------------------------------------- Proventos
-export function Proventos({ r }: { r: Resumo }) {
+type Agrupar = 'mes' | 'trimestre' | 'semestre' | 'ano'
+const AGRUPAR: [Agrupar, string][] = [['mes', 'Por mês'], ['trimestre', 'Por trimestre'], ['semestre', 'Por semestre'], ['ano', 'Por ano']]
+const DATAS_PROV: [string, string][] = [['12m', 'Últimos 12 meses'], ['6m', 'Últimos 6 meses'], ['tudo', 'Desde o início']]
+
+/** "2026-10" menos n meses. */
+function mesesAtras(ym: string, n: number): string {
+  const d = new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1 - n, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/** Meses do gráfico: do passado até o mês atual (os vazios aparecem) e, do futuro, só os meses que têm provento a receber. */
+function mesesDoGrafico(r: Resumo, datas: string): { mes: string; recebido: number; a_receber: number }[] {
+  const hojeMes = r.hoje.slice(0, 7)
+  const todos = r.painelProventos.por_mes
+  const n = datas === '12m' ? 12 : datas === '6m' ? 6 : 0
+  const corte = n ? mesesAtras(hojeMes, n - 1) : '0000-00'
+  const passados = todos.filter((m) => m.mes <= hojeMes && m.mes >= corte)
+  const futuros = todos.filter((m) => m.mes > hojeMes && m.recebido + m.a_receber > 0)
+  return [...passados, ...futuros]
+}
+
+function agrupar(meses: { mes: string; recebido: number; a_receber: number }[], como: Agrupar): { rotulo: string; recebido: number; aReceber: number }[] {
+  const grupos = new Map<string, { rotulo: string; recebido: number; aReceber: number }>()
+  for (const m of meses) {
+    const y = m.mes.slice(0, 4)
+    const yy = y.slice(2)
+    const mm = Number(m.mes.slice(5, 7))
+    const [chave, rotulo] =
+      como === 'mes' ? [m.mes, mesCurto(m.mes)]
+        : como === 'trimestre' ? [`${y}-T${Math.ceil(mm / 3)}`, `${Math.ceil(mm / 3)}T${yy}`]
+          : como === 'semestre' ? [`${y}-S${mm <= 6 ? 1 : 2}`, `${mm <= 6 ? 1 : 2}S${yy}`]
+            : [y, y]
+    const g = grupos.get(chave) ?? { rotulo, recebido: 0, aReceber: 0 }
+    g.recebido += m.recebido
+    g.aReceber += m.a_receber
+    grupos.set(chave, g)
+  }
+  return [...grupos.values()]
+}
+
+function FiltroCompacto({ rotulo, valor, opcoes, onEscolher }: { rotulo: string; valor: string; opcoes: [string, string][]; onEscolher: (v: string) => void }) {
+  const [aberto, setAberto] = useState(false)
+  return (
+    <div className="filtro compacto">
+      <button className="filtro-botao" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+        <span className={`seta ${aberto ? 'aberta' : ''}`}>›</span>
+        <b>{rotulo}</b>
+        <small>{opcoes.find(([v]) => v === valor)?.[1]}</small>
+      </button>
+      {aberto && (
+        <div className="filtro-opcoes">
+          {opcoes.map(([v, t]) => <button key={v} className={valor === v ? 'ativa' : ''} onClick={() => { onEscolher(v); setAberto(false) }}>{t}</button>)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function Proventos({ r, onAtivo }: { r: Resumo; onAtivo?: (t: string) => void }) {
   const p = r.painelProventos
-  const meses = p.por_mes.slice(-12)
+  const [como, setComo] = useState<Agrupar>('mes')
+  const [datas, setDatas] = useState('12m')
+  const barras = useMemo(() => agrupar(mesesDoGrafico(r, datas), como), [r, datas, como])
   const proximos = r.proventos.filter((x) => x.pagamento && x.pagamento >= r.hoje).sort((a, b) => (a.pagamento! < b.pagamento! ? -1 : 1))
   const recentes = r.proventos.filter((x) => x.pagamento && x.pagamento < r.hoje).slice(0, 12)
+  const yoc = r.dashboard.investido ? p.recebido / r.dashboard.investido : null   // yield on cost de tudo que já recebeu
+  const tickerDe = (exibicao: string, ticker?: string): string => ticker ?? exibicao
   return (
     <>
-      <Titulo sub="Dividendos, JCP e rendimentos">Proventos</Titulo>
+      <Titulo>Proventos</Titulo>
       <section className="grade-2">
-        <div className="cartao numero"><small>Recebido (12 meses)</small><strong>{brl(p.recebido_12m)}</strong></div>
-        <div className="cartao numero"><small>A receber</small><strong>{brl(p.a_receber)}</strong></div>
-        <div className="cartao numero"><small>Média mensal</small><strong>{brl(p.media_mensal)}</strong></div>
-        <div className="cartao numero"><small>Yield on cost 12m</small><strong>{pct(p.yield_on_cost_12m)}</strong></div>
+        <div className="cartao numero fixo"><small>Recebido</small><strong>{brl(p.recebido)}</strong></div>
+        <div className="cartao numero fixo"><small>A receber</small><strong>{brl(p.a_receber)}</strong></div>
+        <div className="cartao numero fixo"><small>Média mensal</small><strong>{brl(p.media_mensal)}</strong></div>
+        <div className="cartao numero fixo"><small>Yield on cost</small><strong>{pct(yoc)}</strong></div>
       </section>
       <section className="cartao">
-        <small className="rotulo">Por mês</small>
-        <BarrasMes itens={meses.map((m) => ({ rotulo: mesCurto(m.mes), recebido: m.recebido, aReceber: m.a_receber }))} />
+        <small className="rotulo">{AGRUPAR.find(([v]) => v === como)?.[1]}</small>
+        <FiltroCompacto rotulo="Agrupar" valor={como} opcoes={AGRUPAR} onEscolher={(v) => setComo(v as Agrupar)} />
+        <FiltroCompacto rotulo="Datas" valor={datas} opcoes={DATAS_PROV} onEscolher={setDatas} />
+        <BarrasMes itens={barras} />
         <div className="legenda"><span><i className="am recebido" /> Recebido</span><span><i className="am a-receber" /> A receber</span></div>
+      </section>
+      <section className="cartao"><small className="rotulo">Total por ativo</small>
+        {p.por_ativo.map((a) => (
+          <button className="linha clicavel carteira-linha" key={a.ticker} onClick={() => onAtivo?.(a.ticker)}>
+            <Logo r={r} ticker={a.ticker} nome={a.exibicao} />
+            <div className="col prov-nome"><strong>{a.exibicao}</strong>{a.yoc !== null && <small>yield on cost {pct(a.yoc)}</small>}</div>
+            <div className="col direita"><b>{brl(a.recebido)}</b>{a.a_receber > 0 && <small>+ {brl(a.a_receber)} a receber</small>}</div>
+          </button>
+        ))}
       </section>
       {proximos.length > 0 && (
         <section className="cartao"><small className="rotulo">Próximos pagamentos</small>
-          {proximos.slice(0, 10).map((x, i) => <div className="linha" key={i}><div className="col"><strong>{x.exibicao}</strong><small>{x.tipo} · {cotas(x.quantidade)} cotas</small></div><div className="col direita"><b>{brl(x.total_liquido)}</b><small>{data(x.pagamento)}</small></div></div>)}
+          {proximos.slice(0, 10).map((x, i) => (
+            <div className="linha ativo" key={i}>
+              <Logo r={r} ticker={tickerDe(x.exibicao, x.ticker)} nome={x.exibicao} />
+              <div className="col prov-nome"><strong>{x.exibicao}</strong><small>{x.tipo} · {cotas(x.quantidade)} cotas</small></div>
+              <div className="col direita"><b>{brl(x.total_liquido)}</b><small>{data(x.pagamento)}</small></div>
+            </div>
+          ))}
         </section>
       )}
-      <section className="cartao"><small className="rotulo">Por ativo (total recebido)</small>
-        {p.por_ativo.map((a) => <div className="linha" key={a.ticker}><div className="col"><strong>{a.exibicao}</strong>{a.yoc !== null && <small>yield on cost {pct(a.yoc)}</small>}</div><b>{brl(a.recebido)}</b></div>)}
-      </section>
       <section className="cartao"><small className="rotulo">Últimos pagamentos</small>
-        {recentes.map((x, i) => <div className="linha" key={i}><div className="col"><strong>{x.exibicao}</strong><small>{x.tipo} · {data(x.pagamento)}</small></div><b>{brl(x.total_liquido)}</b></div>)}
+        {recentes.map((x, i) => (
+          <div className="linha ativo" key={i}>
+            <Logo r={r} ticker={tickerDe(x.exibicao, x.ticker)} nome={x.exibicao} />
+            <div className="col prov-nome"><strong>{x.exibicao}</strong><small>{x.tipo} · {data(x.pagamento)}</small></div>
+            <b>{brl(x.total_liquido)}</b>
+          </div>
+        ))}
       </section>
     </>
   )

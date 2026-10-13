@@ -133,20 +133,28 @@ export function BarrasPct({ itens }: { itens: { nome: string; valor: number; cor
   )
 }
 
-/** Barras verticais por mês (proventos). */
+/** Barras verticais (proventos): o valor aparece em cima de cada barra; se forem muitas, rola para o lado. */
 export function BarrasMes({ itens }: { itens: { rotulo: string; recebido: number; aReceber: number }[] }) {
+  if (itens.length === 0) return <div className="suave">Sem proventos neste período.</div>
   const max = Math.max(...itens.map((i) => i.recebido + i.aReceber), 0.01)
+  const curto = (n: number): string => (n === 0 ? '' : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
   return (
-    <div className="barras-mes">
-      {itens.map((i) => (
-        <div key={i.rotulo} className="coluna">
-          <div className="pilha">
-            <i className="a-receber" style={{ height: (i.aReceber / max) * 100 + '%' }} />
-            <i className="recebido" style={{ height: (i.recebido / max) * 100 + '%' }} />
-          </div>
-          <small>{i.rotulo}</small>
-        </div>
-      ))}
+    <div className="barras-rolagem">
+      <div className="barras-mes" style={{ minWidth: itens.length > 8 ? itens.length * 44 : undefined }}>
+        {itens.map((i) => {
+          const total = i.recebido + i.aReceber
+          return (
+            <div key={i.rotulo} className="coluna">
+              <span className="valor-barra">{curto(total)}</span>
+              <div className="pilha">
+                <i className="a-receber" style={{ height: (i.aReceber / max) * 100 + '%' }} />
+                <i className="recebido" style={{ height: (i.recebido / max) * 100 + '%' }} />
+              </div>
+              <small>{i.rotulo}</small>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
