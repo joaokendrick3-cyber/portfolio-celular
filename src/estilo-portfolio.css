@@ -141,3 +141,7 @@ a.linha { color: inherit; text-decoration: none; }
 .vazio-lista { display: block; padding: 18px 4px; text-align: center; }
 .selo.vermelho-suave { background: color-mix(in srgb, var(--vermelho) 18%, transparent); color: var(--vermelho); }
 .linha.evento.ativo .col.direita { flex: none; }
+
+/* tudo que é número com cor (valorização) nas caixas pequenas */
+.numero strong.pos { color: var(--verde); }
+.numero strong.neg { color: var(--vermelho); }

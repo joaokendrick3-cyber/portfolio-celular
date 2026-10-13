@@ -66,8 +66,9 @@ export function Radar({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => void 
             <section className="cartao">
               <small className="rotulo">Próximos eventos</small>
               {rd.agenda.slice(0, 8).map((e, i) => (
-                <div className="linha" key={i}>
-                  <div className="col"><strong>{e.exibicao}</strong><small>{e.descricao}</small></div>
+                <div className="linha ativo" key={i}>
+                  <Logo r={r} ticker={e.ticker} nome={e.exibicao} />
+                  <div className="col prov-nome"><strong>{e.exibicao}</strong><small>{e.descricao}</small></div>
                   <span className="selo">{dataCurta(e.data)}</span>
                 </div>
               ))}

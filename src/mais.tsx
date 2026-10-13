@@ -27,7 +27,10 @@ export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: strin
       <section className="cartao destaque">
         <small className="rotulo">Valor atual da posição</small>
         <strong className="gigante">{brl(s.valor_atual)}</strong>
-        <span className={corDe(s.valorizacao)}>{sinalBRL(s.valorizacao)} · {pct(s.valorizacao_pct, true)}</span>
+      </section>
+      <section className="grade-2">
+        <div className="cartao numero fixo pequeno"><small>Valorização (R$)</small><strong className={corDe(s.valorizacao)}>{sinalBRL(s.valorizacao)}</strong></div>
+        <div className="cartao numero fixo pequeno"><small>Valorização (%)</small><strong className={corDe(s.valorizacao_pct)}>{pct(s.valorizacao_pct, true)}</strong></div>
       </section>
       <section className="cartao quatro-col">
         <div><small>Cotação</small><b>{cotacaoDe(s)}</b></div>
@@ -129,12 +132,13 @@ export function Lancamentos({ r, onVoltar }: { r: Resumo; onVoltar: () => void }
             <Logo r={r} ticker={l.ticker} nome={exibicaoDe(l.ticker)} />
             <div className="col prov-nome">
               <strong>{exibicaoDe(l.ticker)}</strong>
-              <small>{data(l.data)}</small>
-              <small>Cotas {cotas(l.cotas)} · {l.tipo === 'venda' ? 'Preço' : 'PM'} {moeda(l.preco_unitario, moedaDe(l.ticker))}</small>
+              <small>Cotas {cotas(l.cotas)}</small>
+              <small>{l.tipo === 'venda' ? 'Preço' : 'PM'} {moeda(l.preco_unitario, moedaDe(l.ticker))}</small>
             </div>
             <div className="col direita">
               <b className="verde">{brl(l.total)}</b>
               <span className={`selo ${l.tipo === 'venda' ? 'vermelho-suave' : 'verde'}`}>{l.tipo === 'compra' ? 'Compra' : l.tipo === 'venda' ? 'Venda' : l.tipo}</span>
+              <small>{data(l.data)}</small>
             </div>
           </div>
         ))}
