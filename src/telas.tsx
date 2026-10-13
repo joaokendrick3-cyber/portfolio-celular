@@ -14,9 +14,10 @@ export function Titulo({ children, sub, direita }: { children: string; sub?: str
 
 const CORES = ['#6c6cff', '#22d3ee', '#4ade80', '#facc15', '#f472b6', '#fb923c', '#a78bfa']
 
-export function Logo({ r, ticker, nome }: { r: Resumo; ticker: string; nome: string }) {
+export function Logo({ r, ticker, nome, grande = false }: { r: Resumo; ticker: string; nome: string; grande?: boolean }) {
   const src = r.logos[ticker]
-  return src ? <img className="logo-ativo" src={src} alt="" /> : <span className="logo-ativo letra">{nome.slice(0, 2)}</span>
+  const classe = grande ? 'logo-ativo grande' : 'logo-ativo'
+  return src ? <img className={classe} src={src} alt="" /> : <span className={`${classe} letra`}>{nome.slice(0, 2)}</span>
 }
 
 // ---------------------------------------------------------------------------------------- Radar
@@ -207,7 +208,7 @@ function agrupar(meses: { mes: string; recebido: number; a_receber: number }[], 
   return [...grupos.values()]
 }
 
-function FiltroCompacto({ rotulo, valor, opcoes, onEscolher }: { rotulo: string; valor: string; opcoes: [string, string][]; onEscolher: (v: string) => void }) {
+export function FiltroCompacto({ rotulo, valor, opcoes, onEscolher, grade = false }: { rotulo: string; valor: string; opcoes: [string, string][]; onEscolher: (v: string) => void; grade?: boolean }) {
   const [aberto, setAberto] = useState(false)
   return (
     <div className="filtro compacto">
@@ -217,7 +218,7 @@ function FiltroCompacto({ rotulo, valor, opcoes, onEscolher }: { rotulo: string;
         <small>{opcoes.find(([v]) => v === valor)?.[1]}</small>
       </button>
       {aberto && (
-        <div className="filtro-opcoes">
+        <div className={`filtro-opcoes ${grade ? 'grade-opcoes' : ''}`}>
           {opcoes.map(([v, t]) => <button key={v} className={valor === v ? 'ativa' : ''} onClick={() => { onEscolher(v); setAberto(false) }}>{t}</button>)}
         </div>
       )}

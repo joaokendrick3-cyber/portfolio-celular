@@ -145,3 +145,16 @@ a.linha { color: inherit; text-decoration: none; }
 /* tudo que é número com cor (valorização) nas caixas pequenas */
 .numero strong.pos { color: var(--verde); }
 .numero strong.neg { color: var(--vermelho); }
+
+/* Página do ativo */
+.cabecalho-ativo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cabecalho-ativo h1 { margin: 0; }
+.cabecalho-ativo small { display: block; }
+.logo-ativo.grande { width: 60px; height: 60px; border-radius: 16px; padding: 5px; flex: none; }
+.logo-ativo.grande.letra { font-size: 20px; padding: 0; }
+.dados-ativo { gap: 14px; }
+.cotacao-atual { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--borda); }
+.cotacao-atual small { color: var(--texto-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+.cotacao-atual strong { font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: #ffd60a; }
+.dados-ativo .quatro-col b.verde, .verde { color: var(--verde); }
+.selo-op { align-self: flex-start; font-size: 13px; }

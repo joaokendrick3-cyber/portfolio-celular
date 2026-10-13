@@ -1,15 +1,30 @@
 import { useMemo, useState } from 'react'
 import type { Resumo } from './tipos'
-import { brl, cotas, corDe, cotacaoDe, data, intervaloPreco, moeda, pct, precoMedioDe, sinalBRL } from './util'
+import { brl, cotas, corDe, cotacaoDe, data, intervaloPreco, moeda, pct, PERIODOS_GRAFICO, precoMedioDe, recortar, sinalBRL } from './util'
 import { Linhas } from './graficos'
-import { Logo, Titulo } from './telas'
+import { FiltroCompacto, Logo, Titulo } from './telas'
 
 const Voltar = ({ onVoltar }: { onVoltar: () => void }) => <button className="voltar" onClick={onVoltar}>‹ Voltar</button>
 
 // ---------------------------------------------------------------------------------------- Detalhe do ativo
 export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: string; onVoltar: () => void }) {
   const d = r.detalhes[ticker]
-  if (!d) {
+  const [periodo, setPeriodo] = useState('tudo')
+  const g = d?.grafico
+  const precos = useMemo(() => (g ? recortar(g.precos, periodo) : []), [g, periodo])
+  // Preço médio: só muda quando há compra/venda. Vira uma linha "em degraus" que vai do primeiro dia com PM até o último dia do gráfico.
+  const pm = useMemo(() => {
+    if (!g) return []
+    const mudancas = [...g.preco_medio].sort((x, y) => (x.data < y.data ? -1 : 1))
+    const pontos: { x: string; y: number }[] = []
+    for (const p of precos) {
+      let atual: number | null = null
+      for (const c of mudancas) { if (c.data <= p.data) atual = c.valor; else break }
+      if (atual !== null) pontos.push({ x: p.data, y: atual })
+    }
+    return pontos
+  }, [g, precos])
+  if (!d || !g) {
     return (
       <>
         <Voltar onVoltar={onVoltar} />
@@ -19,11 +34,17 @@ export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: strin
     )
   }
   const s = d.resumo
-  const g = d.grafico
+  const inicioJanela = precos[0]?.data ?? ''
   return (
     <>
       <Voltar onVoltar={onVoltar} />
-      <Titulo sub={`${d.nome ?? ''}${d.setor ? ' · ' + d.setor : ''}`}>{d.exibicao}</Titulo>
+      <div className="titulo-tela cabecalho-ativo">
+        <div>
+          <h1>{d.exibicao}</h1>
+          <small>{d.nome ?? ''}{d.setor ? ' · ' + d.setor : ''}</small>
+        </div>
+        <Logo r={r} ticker={d.ticker} nome={d.exibicao} grande />
+      </div>
       <section className="cartao destaque">
         <small className="rotulo">Valor atual da posição</small>
         <strong className="gigante">{brl(s.valor_atual)}</strong>
@@ -32,25 +53,31 @@ export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: strin
         <div className="cartao numero fixo pequeno"><small>Valorização (R$)</small><strong className={corDe(s.valorizacao)}>{sinalBRL(s.valorizacao)}</strong></div>
         <div className="cartao numero fixo pequeno"><small>Valorização (%)</small><strong className={corDe(s.valorizacao_pct)}>{pct(s.valorizacao_pct, true)}</strong></div>
       </section>
-      <section className="cartao quatro-col">
-        <div><small>Cotação</small><b>{cotacaoDe(s)}</b></div>
-        <div><small>Preço médio</small><b>{precoMedioDe(s)}</b></div>
-        <div><small>Cotas</small><b>{cotas(s.cotas)}</b></div>
-        <div><small>Investido</small><b>{brl(s.investido)}</b></div>
-        <div><small>% da carteira</small><b>{pct(s.participacao)}</b></div>
-        <div><small>Proventos</small><b>{brl(s.proventos_recebidos)}</b></div>
-        {s.moeda === 'USD' && d.dolar_hoje ? <div><small>Dólar (PTAX)</small><b>R$ {d.dolar_hoje.toFixed(4).replace('.', ',')}</b></div> : null}
+      <section className="cartao dados-ativo">
+        <div className="cotacao-atual">
+          <small>Cotação atual</small>
+          <strong>{cotacaoDe(s)}</strong>
+        </div>
+        <div className="quatro-col">
+          <div><small>Preço médio</small><b>{precoMedioDe(s)}</b></div>
+          <div><small>Cotas</small><b>{cotas(s.cotas)}</b></div>
+          <div><small>Investido</small><b>{brl(s.investido)}</b></div>
+          <div><small>% da carteira</small><b>{pct(s.participacao)}</b></div>
+          <div><small>Proventos</small><b className="verde">{brl(s.proventos_recebidos)}</b></div>
+          {s.moeda === 'USD' && d.dolar_hoje ? <div><small>Dólar (PTAX)</small><b>R$ {d.dolar_hoje.toFixed(4).replace('.', ',')}</b></div> : null}
+        </div>
       </section>
       <section className="cartao">
         <small className="rotulo">Preço, preço médio e compras</small>
+        <FiltroCompacto rotulo="Datas" valor={periodo} opcoes={PERIODOS_GRAFICO} onEscolher={setPeriodo} grade />
         <Linhas
           formato={(n) => moeda(n, g.moeda)}
           calcular={(i, f) => intervaloPreco(g.precos, i, f)}
           series={[
-            { nome: 'Preço', cor: '#6c6cff', pontos: g.precos.map((p) => ({ x: p.data, y: p.preco })) },
-            ...(g.preco_medio.length > 1 ? [{ nome: 'Preço médio', cor: '#facc15', tracejada: true, pontos: g.preco_medio.map((p) => ({ x: p.data, y: p.valor })) }] : [])
+            { nome: 'Preço', cor: '#6c6cff', pontos: precos.map((p) => ({ x: p.data, y: p.preco })) },
+            ...(pm.length > 1 ? [{ nome: 'Preço médio', cor: '#facc15', tracejada: true, pontos: pm }] : [])
           ]}
-          marcas={g.compras.map((c) => ({ x: c.data, y: c.preco }))}
+          marcas={g.compras.filter((c) => c.data >= inicioJanela).map((c) => ({ x: c.data, y: c.preco }))}
         />
         {s.fonte && <small className="suave">{s.fonte}</small>}
       </section>
@@ -58,13 +85,16 @@ export function DetalheAtivo({ r, ticker, onVoltar }: { r: Resumo; ticker: strin
       <section className="cartao"><small className="rotulo">Histórico de operações</small>
         {d.historico.map((h, i) => (
           <div className="linha" key={i}>
-            <div className="col"><strong>{h.tipo === 'compra' ? 'Compra' : h.tipo === 'venda' ? 'Venda' : h.tipo}</strong><small>{data(h.data)} · {cotas(h.cotas)} × {brl(h.preco)}</small></div>
-            <div className="col direita"><b>{brl(h.total)}</b><small>PM depois: {brl(h.preco_medio_apos)}</small></div>
+            <div className="col">
+              <span className={`selo ${h.tipo === 'venda' ? 'vermelho-suave' : 'verde'} selo-op`}>{h.tipo === 'compra' ? 'Compra' : h.tipo === 'venda' ? 'Venda' : h.tipo}</span>
+              <small>{data(h.data)} · {cotas(h.cotas)} × {brl(h.preco)}</small>
+            </div>
+            <div className="col direita"><b className="verde">{brl(h.total)}</b><small>PM depois: <span className="verde">{brl(h.preco_medio_apos)}</span></small></div>
           </div>
         ))}
       </section>
       {d.proventos.length > 0 && <section className="cartao"><small className="rotulo">Proventos</small>
-        {d.proventos.map((p, i) => <div className="linha" key={i}><div className="col"><strong>{p.tipo}</strong><small>pago em {data(p.pagamento)}</small></div><b>{brl(p.total_liquido)}</b></div>)}
+        {d.proventos.map((p, i) => <div className="linha" key={i}><div className="col"><strong>{p.tipo}</strong><small>pago em {data(p.pagamento)}</small></div><b className="verde">{brl(p.total_liquido)}</b></div>)}
       </section>}
       <ListaEventos r={r} eventos={d.eventos.slice(0, 15)} mostrarAtivo={false} />
     </>
