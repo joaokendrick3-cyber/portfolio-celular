@@ -137,10 +137,10 @@ export function BarrasPct({ itens }: { itens: { nome: string; valor: number; cor
 export function BarrasMes({ itens }: { itens: { rotulo: string; recebido: number; aReceber: number }[] }) {
   if (itens.length === 0) return <div className="suave">Sem proventos neste período.</div>
   const max = Math.max(...itens.map((i) => i.recebido + i.aReceber), 0.01)
-  const curto = (n: number): string => (n === 0 ? '' : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+  const curto = (n: number): string => (n === 0 ? '' : n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))   // sempre em reais
   return (
     <div className="barras-rolagem">
-      <div className="barras-mes" style={{ minWidth: itens.length > 8 ? itens.length * 44 : undefined }}>
+      <div className="barras-mes" style={{ minWidth: itens.length > 5 ? itens.length * 62 : undefined }}>
         {itens.map((i) => {
           const total = i.recebido + i.aReceber
           return (

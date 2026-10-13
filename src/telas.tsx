@@ -181,23 +181,10 @@ export function Carteira({ r, onAtivo }: { r: Resumo; onAtivo: (t: string) => vo
 // ---------------------------------------------------------------------------------------- Proventos
 type Agrupar = 'mes' | 'trimestre' | 'semestre' | 'ano'
 const AGRUPAR: [Agrupar, string][] = [['mes', 'Por mês'], ['trimestre', 'Por trimestre'], ['semestre', 'Por semestre'], ['ano', 'Por ano']]
-const DATAS_PROV: [string, string][] = [['12m', 'Últimos 12 meses'], ['6m', 'Últimos 6 meses'], ['tudo', 'Desde o início']]
 
-/** "2026-10" menos n meses. */
-function mesesAtras(ym: string, n: number): string {
-  const d = new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1 - n, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-/** Meses do gráfico: do passado até o mês atual (os vazios aparecem) e, do futuro, só os meses que têm provento a receber. */
-function mesesDoGrafico(r: Resumo, datas: string): { mes: string; recebido: number; a_receber: number }[] {
-  const hojeMes = r.hoje.slice(0, 7)
-  const todos = r.painelProventos.por_mes
-  const n = datas === '12m' ? 12 : datas === '6m' ? 6 : 0
-  const corte = n ? mesesAtras(hojeMes, n - 1) : '0000-00'
-  const passados = todos.filter((m) => m.mes <= hojeMes && m.mes >= corte)
-  const futuros = todos.filter((m) => m.mes > hojeMes && m.recebido + m.a_receber > 0)
-  return [...passados, ...futuros]
+/** Meses do gráfico: só os que têm provento (recebido ou a receber). Meses vazios não aparecem. */
+function mesesDoGrafico(r: Resumo): { mes: string; recebido: number; a_receber: number }[] {
+  return r.painelProventos.por_mes.filter((m) => m.recebido + m.a_receber > 0)
 }
 
 function agrupar(meses: { mes: string; recebido: number; a_receber: number }[], como: Agrupar): { rotulo: string; recebido: number; aReceber: number }[] {
@@ -240,8 +227,7 @@ function FiltroCompacto({ rotulo, valor, opcoes, onEscolher }: { rotulo: string;
 export function Proventos({ r, onAtivo }: { r: Resumo; onAtivo?: (t: string) => void }) {
   const p = r.painelProventos
   const [como, setComo] = useState<Agrupar>('mes')
-  const [datas, setDatas] = useState('12m')
-  const barras = useMemo(() => agrupar(mesesDoGrafico(r, datas), como), [r, datas, como])
+  const barras = useMemo(() => agrupar(mesesDoGrafico(r), como), [r, como])
   const proximos = r.proventos.filter((x) => x.pagamento && x.pagamento >= r.hoje).sort((a, b) => (a.pagamento! < b.pagamento! ? -1 : 1))
   const recentes = r.proventos.filter((x) => x.pagamento && x.pagamento < r.hoje).slice(0, 12)
   const yoc = r.dashboard.investido ? p.recebido / r.dashboard.investido : null   // yield on cost de tudo que já recebeu
@@ -250,15 +236,14 @@ export function Proventos({ r, onAtivo }: { r: Resumo; onAtivo?: (t: string) => 
     <>
       <Titulo>Proventos</Titulo>
       <section className="grade-2">
-        <div className="cartao numero fixo"><small>Recebido</small><strong>{brl(p.recebido)}</strong></div>
-        <div className="cartao numero fixo"><small>A receber</small><strong>{brl(p.a_receber)}</strong></div>
-        <div className="cartao numero fixo"><small>Média mensal</small><strong>{brl(p.media_mensal)}</strong></div>
-        <div className="cartao numero fixo"><small>Yield on cost</small><strong>{pct(yoc)}</strong></div>
+        <div className="cartao numero fixo pequeno"><small>Recebido</small><strong className="verde">{brl(p.recebido)}</strong></div>
+        <div className="cartao numero fixo pequeno"><small>A receber</small><strong className="verde">{brl(p.a_receber)}</strong></div>
+        <div className="cartao numero fixo pequeno"><small>Média mensal</small><strong className="verde">{brl(p.media_mensal)}</strong></div>
+        <div className="cartao numero fixo pequeno"><small>Yield on cost</small><strong className="verde">{pct(yoc)}</strong></div>
       </section>
       <section className="cartao">
         <small className="rotulo">{AGRUPAR.find(([v]) => v === como)?.[1]}</small>
         <FiltroCompacto rotulo="Agrupar" valor={como} opcoes={AGRUPAR} onEscolher={(v) => setComo(v as Agrupar)} />
-        <FiltroCompacto rotulo="Datas" valor={datas} opcoes={DATAS_PROV} onEscolher={setDatas} />
         <BarrasMes itens={barras} />
         <div className="legenda"><span><i className="am recebido" /> Recebido</span><span><i className="am a-receber" /> A receber</span></div>
       </section>
