@@ -4,7 +4,7 @@ import type { Resumo } from './tipos'
 import { baixarResumo, lerCache, limparCache, supabase, temSupabase, VERSAO_ENTENDIDA } from './dados'
 import Entrada from './Entrada'
 import { Carteira, Dashboard, Proventos, Radar } from './telas'
-import { DetalheAtivo, Eventos, Lancamentos, Mais, Notificacoes, Observacao, type ParteMais } from './mais'
+import { DetalheAtivo, Eventos, Lancamentos, Mais, Notificacoes, type ParteMais } from './mais'
 
 type Aba = 'radar' | 'dashboard' | 'carteira' | 'proventos' | 'mais'
 const ABAS: { id: Aba; nome: string; icone: string }[] = [
@@ -97,7 +97,6 @@ function Conteudo({ onCapa }: { onCapa: () => void }) {
   else if (aba === 'proventos') tela = <Proventos r={resumo} onAtivo={setAtivo} />
   else if (parte === 'eventos') tela = <Eventos r={resumo} onVoltar={() => setParte('menu')} />
   else if (parte === 'lancamentos') tela = <Lancamentos r={resumo} onVoltar={() => setParte('menu')} />
-  else if (parte === 'observacao') tela = <Observacao r={resumo} onVoltar={() => setParte('menu')} />
   else if (parte === 'notificacoes') tela = <Notificacoes r={resumo} onVoltar={() => setParte('menu')} />
   else tela = <Mais r={resumo} onIr={(p) => { setParte(p); window.scrollTo(0, 0) }} onSair={supabase ? () => void sair() : undefined} />
 

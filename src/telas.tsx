@@ -14,7 +14,7 @@ export function Titulo({ children, sub, direita }: { children: string; sub?: str
 
 const CORES = ['#6c6cff', '#22d3ee', '#4ade80', '#facc15', '#f472b6', '#fb923c', '#a78bfa']
 
-function Logo({ r, ticker, nome }: { r: Resumo; ticker: string; nome: string }) {
+export function Logo({ r, ticker, nome }: { r: Resumo; ticker: string; nome: string }) {
   const src = r.logos[ticker]
   return src ? <img className="logo-ativo" src={src} alt="" /> : <span className="logo-ativo letra">{nome.slice(0, 2)}</span>
 }

@@ -27,7 +27,7 @@ export interface PainelProventos {
 export interface Provento { ticker: string; exibicao: string; tipo: string; data_com: string | null; pagamento: string | null; quantidade: number; valor_por_cota: number; total_liquido: number; imposto: number }
 export interface Lancamento { classe: string; tipo: string; ticker: string; data: string | null; cotas: number; preco_unitario: number; total: number }
 export interface Evento { categoria: string; data: string; detalhe: string | null; exibicao: string; fonte: string | null; importancia: string; link: string | null; oficial: boolean; opiniao: boolean; ticker: string; titulo: string }
-export interface Notificacao { id: number; categoria: string; data: string; descricao: string; exibicao: string; fonte: string | null; lida: boolean; link: string | null; titulo?: string }
+export interface Notificacao { id: number; categoria: string; data: string; descricao: string; exibicao: string; ticker: string; fonte: string | null; lida: boolean; link: string | null; titulo?: string; oficial?: boolean; opiniao?: boolean }
 export interface Detalhe {
   ticker: string; exibicao: string; nome: string | null; classe: string; setor: string | null; em_carteira: boolean
   resumo: Ativo & { preco_medio_usd: number | null; cotacao_usd: number | null }

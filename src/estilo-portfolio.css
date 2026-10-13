@@ -136,3 +136,8 @@ a.linha { color: inherit; text-decoration: none; }
 .barras-mes .coluna { min-width: 52px; }
 .barras-mes .pilha { width: 22px; align-self: center; }
 .barras-mes .valor-barra { font-size: 10.5px; }
+
+/* Notificações, eventos e lançamentos */
+.vazio-lista { display: block; padding: 18px 4px; text-align: center; }
+.selo.vermelho-suave { background: color-mix(in srgb, var(--vermelho) 18%, transparent); color: var(--vermelho); }
+.linha.evento.ativo .col.direita { flex: none; }
